@@ -1,39 +1,25 @@
-import express from "express";
-import fs from "fs";
-import notes from "./Develop/db/db.json";
-import path from "path";
-import uuid from "uuid";
-import { DH_CHECK_P_NOT_SAFE_PRIME } from "constants";
+import express from 'express';
+import path from 'path';
 
+const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
+
+import RoutesAPI from "./Develop/routes/routesAPI.js"
+import RoutesHome from "./Develop/routes/routesHome.js"
+
+
+const PORT = process.env.PORT || 4444;
 
 const app = express();
-var PORT = process.env.PORT || 4023;
 
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.urlencoded({ extended: true }));
+
+app.use("/api/notes", RoutesAPI);
+app.use("/", RoutesHome);
 
 
-app.get("/api/notes", (req, res) => {
-  res.sendFile(path.join(__dirname, "/db/db.json"))
-});
-// ADD NOTES 
-app.post("/api/notes", (req, res) => {
-  const notes = JSON.parse(fs.readFileSync("./db/db.json"));
-  const newNotes = req.body;
-  newNotes.id = uuid.v4();
-  notes.push(newNotes);
-  fs.writeFileSync("./db/db.json", JSON.stringify(notes))
-  res.json(notes);
-});
-// REMOVE NOTES 
-app.delete("/api/notes/:id", (req, res) => {
-  const notes = JSON.parse(fs.readFileSync("./db/db.json"));
-  const deleteNote = notes.filter((rmvNote) => rmvNote.id !== req.params.id);
-  fs.writeFileSync("./db/db.json", JSON.stringify(deleteNote));
-  res.json(deleteNote);
-});
-
-app.listen(PORT, function () {
-  console.log("Application listening on PORT: " + PORT);
-});
+app.listen(PORT, () => {
+  console.log(`App listening on port  http://localhost:${PORT}`);
+})
